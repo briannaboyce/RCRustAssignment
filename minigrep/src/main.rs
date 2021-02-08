@@ -13,7 +13,7 @@ fn main() {
 	let file = &args[1];
 
 	let contents = fs::read_to_string(file)
-		.expect("Some error happened");
+		.expect("File does not exist");
 
 	for line in contents.lines() {
 		//need to check if valid command
@@ -41,7 +41,11 @@ fn main() {
 										.ok()
 										.expect("failure");
 
-		println!("{}", output);
+		//println!("process ID is {}", process::id());
+
+		print!("{}", output);
+		println!(".");
 	}
+		println!("All done");
 
 }

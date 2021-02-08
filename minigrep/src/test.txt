@@ -2,3 +2,7 @@ echo 'Hello World!'
 echo 'I can read a second line!'
 echo 'Now I am adding some dummy text to a new file' > dummy.txt
 echo 'Creating a file in a different directory, wow' > ../dummy2.txt
+rm dummy.txt
+rm ../dummy2.txt
+del dummy.txt
+del ../dummy2.txt
