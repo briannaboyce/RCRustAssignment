@@ -1,6 +1,7 @@
 use std::env;
 use std::io::{stdin, stdout, Write};
 use std::process::Command;
+use std::fs;
 
 
 fn main() {
@@ -10,18 +11,31 @@ fn main() {
 		when the program starts, it should start with an argument to the file of commands
 	*/
 	let args: Vec<String> = env::args().collect();
+	let mut commands: Vec<String> = Vec::new();
 
-	let command = &args[1];
-	let parameter = &args[2];
+	let file = &args[1];
+
+	let contents = fs::read_to_string(file)
+		.expect("Some error happened");
+
+	for line in contents.lines() {
+		//need to check if valid command
+		commands.push(line.to_string());
+	}
+	
+
+//should iterate over commands to provide list of commands
+	let command = &commands[0];
+	println!("{}", command);
 
 	let process = if cfg!(target_os = "windows") {
 		Command::new("cmd")
-				.args(&["/C", command, parameter])
+				.args(&["/C", command])
 				.output()
 				.expect("failed to execute")
 	} else {
-		Command::new(command)
-				.arg(parameter)
+		Command::new("sh")
+				.arg(command)
 				.output()
 				.expect("failed to execute") 
 	};
