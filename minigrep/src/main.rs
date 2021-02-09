@@ -3,12 +3,13 @@ use std::fs;
 use std::process::Command;
 use serde_yaml;
 use serde::{Serialize, Deserialize};
+use std::collections::HashMap;
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 struct Process {
 	path: String,
 	name: String,
-	arguments: std::collections::HashMap<String, String>,
+	arguments: Option<Vec<String>>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
@@ -21,10 +22,10 @@ struct File {
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 struct InputFile {
-	process: std::collections::HashMap<String, Process>,
-	create: std::collections::HashMap<String, File>,
-	update: std::collections::HashMap<String, File>,
-	delete: std::collections::HashMap<String, File>,
+	process: HashMap<String, Process>,
+	create: HashMap<String, File>,
+	update: HashMap<String, File>,
+	delete: HashMap<String, File>,
 }
 
 fn main() {
@@ -46,30 +47,28 @@ fn main() {
 	for (name, process) in processes {
 		let path = process.path;
 		let name = process.name;
-		let arguments = process.arguments;
+		let mut arguments = process.arguments;
 
 		println!("{}", path);
 		println!("{}", name);
+		println!("{:?}", arguments);
 
 
 		let mut list_of_args: Vec<String> = Vec::new();
 
-		for(key, value) in arguments {
-			list_of_args.push(format!(" {}={}", key, value));
-		}
-
-
 		let mut command = if cfg!(target_os = "windows") {
-			format!("cd {0} && bash && {1}", &path, &name).to_owned()
+			format!("cd {0} && start {1}", &path, &name).to_owned()
 		} else {
 			format!("cd {0} && chmod +x {0}{1} && ./{1}", &path, &name).to_owned()
 		};
 
-		let mut i = 0;
-
-		while i < list_of_args.len() {
-			command.push_str(&list_of_args[i]);
-			i+=1;
+		match arguments {
+			Some(value) => {
+				for val in value {
+					command.push_str(&format!(" {:?}", val));
+				}
+			},
+			None => break,
 		}
 
 		println!("{}", command);
@@ -90,32 +89,6 @@ fn main() {
 		};
 
 	}
-
-	/*for line in contents.lines() {
-		//need to check if valid command
-		commands.push(line.to_string());
-	}
-	
-
-	//Iterate over list of commands
-	for command in commands {
-		//let process = 
-		if cfg!(target_os = "windows") {
-
-			Command::new("cmd")
-					.args(&["/C", &command])
-					.spawn()
-					.expect("failed to execute")
-		} else {
-			Command::new("sh")
-					.arg("-c")
-					.arg(&command)
-					.spawn()
-					.expect("failed to execute") 
-		};
-
-		println!(".");
-	}*/
 		println!("All done");
 
 }

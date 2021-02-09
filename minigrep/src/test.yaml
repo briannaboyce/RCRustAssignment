@@ -4,8 +4,6 @@ process:
    path: ~/RCRustAssignment/scripts/
    name: testBash.sh
    arguments:
-     X: !!str 22
-     Y: !!str 22
 
 #Create a file
 
