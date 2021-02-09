@@ -29,21 +29,62 @@ struct InputFile {
 
 fn main() {
 
-	//Collect input from a file
-	//Should limit file type to something specific like yaml, using txt for now
+	//Collect input from a yaml file
 	let args: Vec<String> = env::args().collect();
-	let mut commands: Vec<String> = Vec::new();
 
 	let file = &args[1];
 	let contents = fs::read_to_string(file)
 		.expect("File does not exist");
 
-	println!("{}", contents);
+	let yaml_data: InputFile = serde_yaml::from_str::<InputFile>(&contents).unwrap();
 
-	let yaml_data = serde_yaml::from_str::<InputFile>(&contents);
-	yaml_data.process[0];
+	let processes = yaml_data.process;
 
-	println!("{:?}", yaml_data);
+	println!("the process is: {:?}", processes);
+
+
+	for (name, process) in processes {
+		let path = process.path;
+		let name = process.name;
+		let arguments = process.arguments;
+
+		println!("{}", path);
+		println!("{}", name);
+
+
+		let mut list_of_args: Vec<String> = Vec::new();
+
+		for(key, value) in arguments {
+			list_of_args.push(format!(" {}={}", key, value));
+		}
+
+
+		let mut command = format!("cd {} && ./{}", &path, &name).to_owned();
+		let mut i = 0;
+
+		while i < list_of_args.len() {
+			command.push_str(&list_of_args[i]);
+			i+=1;
+		}
+
+		println!("{}", command);
+
+
+		if cfg!(target_os = "windows") {
+
+			Command::new("cmd")
+					.args(&["/C", &command])
+					.spawn()
+					.expect("failed to execute")
+		} else {
+			Command::new("sh")
+					.arg("-c")
+					.arg(&command)
+					.spawn()
+					.expect("failed to execute")
+		};
+
+	}
 
 	/*for line in contents.lines() {
 		//need to check if valid command
