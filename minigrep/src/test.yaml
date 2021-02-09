@@ -1,0 +1,44 @@
+#Start a process
+process:
+  process1:  
+   path: ~/
+   name: testBash.sh
+   arguments:
+     X: !!str 22
+     Y: !!str 22
+
+#Create a file
+
+create:
+  file1: 
+   path: ~/Desktop
+   type: txt
+   name: dummy
+   content: Dummy text for a new test file
+
+  file2: 
+   path: ~/
+   type: txt
+   name: dummy2
+   content: 
+
+#Update a file
+
+update: 
+  file1: 
+   path: ~/Desktop
+   type: yaml
+   name: dummy
+   content: Better text
+
+#Delete a file
+
+delete: 
+  file1: 
+   path: ~/
+   type: txt
+   name: dummy2
+   content: 
+
+#chmod +x ~/testBash.sh
+#(cd ~/ && ./testBash.sh )
