@@ -68,7 +68,7 @@ fn main() {
 					command.push_str(&format!(" {:?}", val));
 				}
 			},
-			None => break,
+			None => print!("nothing happened"),
 		}
 
 		println!("{}", command);
