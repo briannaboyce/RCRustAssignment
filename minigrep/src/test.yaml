@@ -1,7 +1,7 @@
 #Start a process
 process:
   process1:  
-   path: ~/
+   path: ~/RCRustAssignment/scripts/
    name: testBash.sh
    arguments:
      X: !!str 22

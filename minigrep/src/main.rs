@@ -59,7 +59,7 @@ fn main() {
 		}
 
 
-		let mut command = format!("cd {} && ./{}", &path, &name).to_owned();
+		let mut command = format!("cd {0} && chmod +x {0}{1} && ./{1}", &path, &name).to_owned();
 		let mut i = 0;
 
 		while i < list_of_args.len() {
