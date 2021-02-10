@@ -9,14 +9,14 @@ process:
 
 create:
   file1: 
-   path: ~/Desktop
-   type: txt
+   path: /home/bri/Desktop/
+   file_type: txt
    name: dummy
    content: Dummy text for a new test file
 
   file2: 
-   path: ~/
-   type: txt
+   path: 
+   file_type: txt
    name: dummy2
    content: 
 
@@ -25,7 +25,7 @@ create:
 update: 
   file1: 
    path: ~/Desktop
-   type: yaml
+   file_type: yaml
    name: dummy
    content: Better text
 
@@ -33,8 +33,8 @@ update:
 
 delete: 
   file1: 
-   path: ~/
-   type: txt
+   path: /
+   file_type: txt
    name: dummy2
    content: 
 
