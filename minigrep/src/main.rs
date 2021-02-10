@@ -93,7 +93,7 @@ fn main() {
 	for (_name, file) in files_to_create {
 
 		//Get file data
-		let mut path = file.path;
+		let path = file.path;
 		let file_type = file.file_type;
 		let name = file.name;
 		let content = file.content;
@@ -114,6 +114,58 @@ fn main() {
 							.open(name_for_file)
 							.expect("creation failed");
 		new_file.write_all(content.as_bytes()).expect("write failed");
+	}
+
+	//Update file
+	let files_to_update = yaml_data.update;
+
+	//Iterate through any files that need updating
+	//TODO make own function
+	for(_name, file) in files_to_update {
+		//File data
+		let path = file.path;
+		let file_type = file.file_type;
+		let name = file.name;
+		let content = file.content;
+
+		//TODO this is going to be used multiple times...should be its own function
+		//Check if path was provided
+		//If so, use that
+		//If not, use current directory
+		let mut name_for_file =  format!("{}.{}", name, file_type);
+
+		if let Some(specific_path) = &path {
+			name_for_file = format!("{}{}.{}", *specific_path, name, file_type);
+		}
+
+		let mut update_file = OpenOptions::new()
+							.append(true)
+							.open(name_for_file)
+							.expect("update failed");
+		update_file.write_all(content.as_bytes()).expect("write failed");
+	}
+
+	//Delete file
+	let files_to_delete = yaml_data.delete;
+
+	//Iterate through any files that need deleting
+	//TODO make own function
+	for(_name, file) in files_to_delete {
+		let path = file.path;
+		let file_type = file.file_type;
+		let name = file.name;
+
+		//TODO this is going to be used multiple times...should be its own function
+		//Check if path was provided
+		//If so, use that
+		//If not, use current directory
+		let mut name_for_file =  format!("{}.{}", name, file_type);
+
+		if let Some(specific_path) = &path {
+			name_for_file = format!("{}{}.{}", *specific_path, name, file_type);
+		}
+
+		fs::remove_file(name_for_file).expect("deletion failed");
 	}
 
 	println!("All done");

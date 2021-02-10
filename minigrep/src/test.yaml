@@ -16,7 +16,7 @@ create:
 
   file2: 
    path: 
-   file_type: txt
+   file_type: yaml
    name: dummy2
    content: 
 
@@ -24,8 +24,8 @@ create:
 
 update: 
   file1: 
-   path: ~/Desktop
-   file_type: yaml
+   path: /home/bri/Desktop/
+   file_type: txt
    name: dummy
    content: Better text
 
@@ -33,8 +33,8 @@ update:
 
 delete: 
   file1: 
-   path: /
-   file_type: txt
+   path: 
+   file_type: yaml
    name: dummy2
    content: 
 
