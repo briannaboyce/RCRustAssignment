@@ -1,7 +1,7 @@
 #Start a process
 process:
   process1:  
-   path: ~/RCRustAssignment/scripts/
+   path: /home/bri/RCRustAssignment/scripts/
    name: testBash.sh
    arguments:
 
@@ -19,6 +19,12 @@ create:
    file_type: yaml
    name: dummy2
    content: 
+
+  networkFile: 
+    path: /home/bri/
+    file_type: txt
+    name: hello
+    content: Hello World!
 
 #Update a file
 
@@ -38,5 +44,11 @@ delete:
    name: dummy2
    content: 
 
-#chmod +x ~/testBash.sh
-#(cd ~/ && ./testBash.sh )
+network:
+  testTcp: 
+    dest_addr: !!str 172.16.0.8
+    dest_port: !!str 4444
+    protocol: tcp
+    data: /home/bri/hello.txt
+
+

@@ -6,6 +6,11 @@ use serde::{Serialize, Deserialize};
 use std::collections::HashMap;
 use std::io::Write;
 use std::fs::OpenOptions;
+use std::net::TcpStream;
+use std::path::Path;
+use std::fs::File;
+use std::io::Read;
+
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 struct Process {
@@ -15,7 +20,7 @@ struct Process {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-struct File {
+struct FileDef {
 	path: Option<String>,
 	file_type: String,
 	name: String,
@@ -23,11 +28,20 @@ struct File {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+struct NetworkConnection {
+	dest_addr: String,
+	dest_port: String,
+	protocol: String,
+	data: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 struct InputFile {
 	process: HashMap<String, Process>,
-	create: HashMap<String, File>,
-	update: HashMap<String, File>,
-	delete: HashMap<String, File>,
+	create: HashMap<String, FileDef>,
+	update: HashMap<String, FileDef>,
+	delete: HashMap<String, FileDef>,
+	network: HashMap<String, NetworkConnection>,
 }
 
 fn main() {
@@ -121,6 +135,10 @@ fn main() {
 
 	//Iterate through any files that need updating
 	//TODO make own function
+	//TODO should check if we want to overwrite or append to file
+	//TODO should check if extension for file should change
+	//TODO should check if old file extension should be kept as well as new file
+	//See here: https://www.linuxjournal.com/content/getting-started-rust-working-files-and-doing-file-io
 	for(_name, file) in files_to_update {
 		//File data
 		let path = file.path;
@@ -166,6 +184,45 @@ fn main() {
 		}
 
 		fs::remove_file(name_for_file).expect("deletion failed");
+	}
+
+	let network_operations = yaml_data.network;
+
+	//let mut tcp_transmission: Vec<NetworkConnection> = Vec::<NetworkConnection>::new();
+	//let mut udp_transmission: Vec<NetworkConnection> = Vec::<NetworkConnection>::new();
+	//let mut http_transmission: Vec<NetworkConnection> = Vec::<NetworkConnection>::new();
+
+	//Iterate through any network connections and transmission
+	for(_name, network_op) in network_operations {
+		let protocol = network_op.protocol;
+		let dest_addr = network_op.dest_addr;
+		let dest_port = network_op.dest_port;
+		let data = network_op.data;
+
+		match protocol.trim() {
+			"tcp" => {
+				let destination = format!("{}:{}", dest_addr, dest_port);
+				println!("{}", destination);
+				let mut stream = TcpStream::connect(destination).expect("Connection failed");
+
+				let path = Path::new(&data);
+			    let file_name = path.file_name().unwrap();
+			    println!("File name: {:?}", file_name);
+
+			    let mut file = std::fs::File::open(path).expect("failure");
+			    let file_size = file.metadata().unwrap().len();
+			    println!("File size: {}", file_size);
+
+			    let mut buffer = vec![0; file_size as usize];
+			    let read_amt = file.read(&mut buffer).expect("read fail");
+			    println!("Bytes read from file: {}", read_amt);
+
+				stream.write(&buffer).expect("write failed");
+			},
+			//"udp" => udp_transmission.push(network_op),
+			//"http" => http_transmission.push(network_obj),
+			_ => {},
+		} 
 	}
 
 	println!("All done");
