@@ -70,15 +70,16 @@ pub fn build_and_output_log(yaml_log: YamlLog)  {
     let datetime: DateTime::<Utc> = timestamp.into();
     let timestamp_str = datetime.format("%Y-%m-%d %H:%M:%S.%f").to_string();
 
+    let mut log_name = String::new();
 
-    let log_name = if cfg!(target_os = "windows") {
-    	format!("%userprofile%\Desktop\log-{}.yaml", timestamp_str);
+    if cfg!(target_os = "windows") {
+    	log_name = format!("%userprofile%\Desktop\log-{}.yaml", timestamp_str);
     } else {
-    	format!("$HOME/Desktop/log-{}.yaml", timestamp_str);
+    	log_name = format!("$HOME/Desktop/log-{}.yaml", timestamp_str);
     }
 
 	let mut new_file = OpenOptions::new()
-							.create(true)
+							.create(true)g
 							.append(true)
 							.open(log_name)
 							.expect("creation failed");
