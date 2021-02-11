@@ -43,7 +43,7 @@ pub struct NetworkLog {
 pub struct YamlLog {
 	pub process_log: HashMap<String, ProcessLog>,
 	pub file_log: HashMap<String, FileLog>,
-	network_log: HashMap<String, NetworkLog>,
+	pub network_log: HashMap<String, NetworkLog>,
 }
 
 impl Default for YamlLog {
@@ -75,9 +75,10 @@ pub fn create_process_entry(timestamp: SystemTime, uname: String,
 	return process_to_add;
 }
 
-pub fn create_file_entry(timestamp: SystemTime, path: String, activity: 
-							String, uname: String, pname: String, cmd: 
-							String, pid: usize) -> FileLog {
+pub fn create_file_entry(timestamp: SystemTime, path: String, 
+						 activity: String, uname: String, 
+						 pname: String, cmd: String, 
+						 pid: usize) -> FileLog {
 
 	let file_to_add: FileLog = FileLog {
 		timestamp: timestamp,
@@ -87,12 +88,33 @@ pub fn create_file_entry(timestamp: SystemTime, path: String, activity:
 		process_name: pname,
 		command_line: cmd, 
 		pid: pid,
-	}
+	};
 
 	return file_to_add;
 
 }
 
-pub fn create_network_entry() {
+pub fn create_network_entry(timestamp: SystemTime, uname: String,
+							daddr: String, dport: String,
+							saddr: String, sport: String,
+							size: usize, protocol: String,
+							pname: String, cmd: String,
+							pid: usize) -> NetworkLog {
+
+	let network_to_add: NetworkLog = NetworkLog {
+		timestamp: timestamp,
+		username: uname,
+		dest_addr: daddr,
+		dest_port: dport,
+		src_addr: saddr,
+		src_port: sport,
+		data_amt: size,
+		protocol: protocol,
+		process_name: pname,
+		command_line: cmd,
+		pid: pid,
+	};
+
+	return network_to_add;
 
 }

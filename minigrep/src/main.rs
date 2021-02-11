@@ -69,23 +69,26 @@ fn main() {
 
 	//Create any new files as described by the YAML file
 	let files_to_create = yaml_data.create;
-	let files_to_log: HashMap<String, log::FileLog> = create_file(files_to_create, files_to_log);
-
-	println!("log so far {:?}", log_file);
+	files_to_log = create_file(files_to_create, files_to_log);
 
 	//Update file
 	let files_to_update = yaml_data.update;
-	update_file(files_to_update);
+	files_to_log = update_file(files_to_update, files_to_log);
 
 	//Delete file
 	let files_to_delete = yaml_data.delete;
-	delete_file(files_to_delete);
+	files_to_log = delete_file(files_to_delete, files_to_log);
+
+	//Add all files to log
+	log_file.file_log = files_to_log;
 	
 
 	//Network data transmission
 	let network_operations = yaml_data.network;
-	transmit_data(network_operations);
-	
+	let network_to_log: HashMap<String, log::NetworkLog> = transmit_data(network_operations);
+	log_file.network_log = network_to_log;
+
+	println!("log so far {:?}", log_file);
 
 	println!("All done");
 
@@ -145,6 +148,7 @@ fn execute_process(processes: HashMap<String, Process>) -> HashMap<String, log::
 }
 
 fn create_file(files_to_create: HashMap<String, FileInfo>, file_log: HashMap<String, log::FileLog>) -> HashMap<String, log::FileLog> {
+	let mut file_log = file_log;
 	//Iterate through any files that need creation
 	for (_name, file) in files_to_create {
 
@@ -178,7 +182,8 @@ fn create_file(files_to_create: HashMap<String, FileInfo>, file_log: HashMap<Str
 
 }
 
-fn update_file(files_to_update: HashMap<String, FileInfo>) {
+fn update_file(files_to_update: HashMap<String, FileInfo>, file_log: HashMap<String, log::FileLog>) -> HashMap<String, log::FileLog> {
+	let mut file_log = file_log;
 	//Iterate through any files that need updating
 	//TODO should check if we want to overwrite or append to file
 	//TODO should check if extension for file should change
@@ -198,10 +203,23 @@ fn update_file(files_to_update: HashMap<String, FileInfo>) {
 							.open(name_for_file)
 							.expect("update failed");
 		update_file.write_all(content.as_bytes()).expect("write failed");
+
+		//Log the processes
+		let log_file_name = format!("{}-update", _name);
+		//TODO populate with the real data
+		file_log.insert(log_file_name, log::create_file_entry(SystemTime::now(),
+																		"path/to/file/".to_string(),
+																		"update".to_string(), 
+																		"bri".to_string(), 
+																		"process".to_string(), 
+																		"command".to_string(), 
+																		12));
 	}
+	return file_log;
 }
 
-fn delete_file(files_to_delete: HashMap<String, FileInfo>) {
+fn delete_file(files_to_delete: HashMap<String, FileInfo>, file_log: HashMap<String, log::FileLog>) -> HashMap<String, log::FileLog> {
+	let mut file_log = file_log;
 	//Iterate through any files that need deleting
 	for(_name, file) in files_to_delete {
 		let path = file.path;
@@ -211,7 +229,19 @@ fn delete_file(files_to_delete: HashMap<String, FileInfo>) {
 		let name_for_file = get_file_path(name, file_type, path);
 
 		fs::remove_file(name_for_file).expect("deletion failed");
+
+		//Log the processes
+		let log_file_name = format!("{}-delete", _name);
+		//TODO populate with the real data
+		file_log.insert(log_file_name, log::create_file_entry(SystemTime::now(),
+																		"path/to/file/".to_string(),
+																		"delete".to_string(), 
+																		"bri".to_string(), 
+																		"process".to_string(), 
+																		"command".to_string(), 
+																		12));
 	}
+	return file_log;
 }
 
 fn get_file_path(name: String, file_type: String, path: Option<String>) -> String {
@@ -227,7 +257,8 @@ fn get_file_path(name: String, file_type: String, path: Option<String>) -> Strin
 		return name_for_file;
 }
 
-fn transmit_data(network_operations: HashMap<String, NetworkConnection>) {
+fn transmit_data(network_operations: HashMap<String, NetworkConnection>) -> HashMap<String, log::NetworkLog> {
+	let mut log_of_networks: HashMap<String, log::NetworkLog> = HashMap::new();
 	//Iterate through any network connections and transmission
 	for(_name, network_op) in network_operations {
 		let protocol = network_op.protocol;
@@ -281,5 +312,22 @@ fn transmit_data(network_operations: HashMap<String, NetworkConnection>) {
 			}
 			_ => {},
 		} 
+
+		//Log the processes
+		let log_network_name = format!("{}", _name);
+		//TODO populate with the real data
+		log_of_networks.insert(log_network_name, log::create_network_entry(SystemTime::now(), 
+																	"bri".to_string(), 
+																	dest_addr,
+																	dest_port,
+																	"127.0.0.1".to_string(),
+																	"0000".to_string(),
+																	31,
+																	protocol,
+																	"process".to_string(), 
+																	"command".to_string(), 
+																	12));
 	}
+
+	return log_of_networks;
 }
