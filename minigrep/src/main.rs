@@ -8,9 +8,8 @@ use std::io::Write;
 use std::fs::OpenOptions;
 use std::net::TcpStream;
 use std::path::Path;
-use std::fs::File;
 use std::io::Read;
-
+use std::net::UdpSocket;
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 struct Process {
@@ -20,7 +19,7 @@ struct Process {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-struct FileDef {
+struct FileInfo {
 	path: Option<String>,
 	file_type: String,
 	name: String,
@@ -38,9 +37,9 @@ struct NetworkConnection {
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 struct InputFile {
 	process: HashMap<String, Process>,
-	create: HashMap<String, FileDef>,
-	update: HashMap<String, FileDef>,
-	delete: HashMap<String, FileDef>,
+	create: HashMap<String, FileInfo>,
+	update: HashMap<String, FileInfo>,
+	delete: HashMap<String, FileInfo>,
 	network: HashMap<String, NetworkConnection>,
 }
 
@@ -188,10 +187,6 @@ fn main() {
 
 	let network_operations = yaml_data.network;
 
-	//let mut tcp_transmission: Vec<NetworkConnection> = Vec::<NetworkConnection>::new();
-	//let mut udp_transmission: Vec<NetworkConnection> = Vec::<NetworkConnection>::new();
-	//let mut http_transmission: Vec<NetworkConnection> = Vec::<NetworkConnection>::new();
-
 	//Iterate through any network connections and transmission
 	for(_name, network_op) in network_operations {
 		let protocol = network_op.protocol;
@@ -205,6 +200,8 @@ fn main() {
 				println!("{}", destination);
 				let mut stream = TcpStream::connect(destination).expect("Connection failed");
 
+				//TODO need to check if there is a path to a file or just regular data
+				//handle errors more gracefully
 				let path = Path::new(&data);
 			    let file_name = path.file_name().unwrap();
 			    println!("File name: {:?}", file_name);
@@ -219,8 +216,28 @@ fn main() {
 
 				stream.write(&buffer).expect("write failed");
 			},
-			//"udp" => udp_transmission.push(network_op),
-			//"http" => http_transmission.push(network_obj),
+			"udp" => {
+				let destination = format!("{}:{}", dest_addr, dest_port);
+				println!("{}", destination);
+
+				//Automatically bind UDP socket
+				let socket = UdpSocket::bind("0.0.0.0:0").expect("bind failed");
+
+				let path = Path::new(&data);
+			    let file_name = path.file_name().unwrap();
+			    println!("File name: {:?}", file_name);
+
+			    let mut file = std::fs::File::open(path).expect("failure");
+			    let file_size = file.metadata().unwrap().len();
+			    println!("File size: {}", file_size);
+
+			    let mut buffer = vec![0; file_size as usize];
+			    let read_amt = file.read(&mut buffer).expect("read fail");
+			    println!("Bytes read from file: {}", read_amt);
+
+			    socket.connect(destination).expect("connect failed");
+				socket.send(&buffer).expect("send failed");
+			}
 			_ => {},
 		} 
 	}

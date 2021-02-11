@@ -51,4 +51,11 @@ network:
     protocol: tcp
     data: /home/bri/hello.txt
 
+  testUdp: 
+    dest_addr: !!str 172.16.0.8
+    dest_port: !!str 4444
+    protocol: udp
+    data: /home/bri/hello.txt
+
+
 
