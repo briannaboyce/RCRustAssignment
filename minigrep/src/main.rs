@@ -10,6 +10,9 @@ use std::net::TcpStream;
 use std::path::Path;
 use std::io::Read;
 use std::net::UdpSocket;
+use std::time::{SystemTime, UNIX_EPOCH};
+
+mod log;
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 struct Process {
@@ -45,6 +48,9 @@ struct InputFile {
 
 fn main() {
 
+	//Create log
+	let mut log_file = log::YamlLog::default();
+
 	//Collect input from a yaml file
 	let args: Vec<String> = env::args().collect();
 
@@ -56,7 +62,9 @@ fn main() {
 
 	//Setup and run any processes as defined in YAML
 	let processes = yaml_data.process;
-	execute_process(processes);
+	let processes_to_log: HashMap<String, log::ProcessLog> = execute_process(processes);
+	log_file.process_log = processes_to_log;
+	println!("log so far {:?}", log_file);
 
 	//Create any new files as described by the YAML file
 	let files_to_create = yaml_data.create;
@@ -81,7 +89,8 @@ fn main() {
 
 }
 
-fn execute_process(processes: HashMap<String, Process>) {
+fn execute_process(processes: HashMap<String, Process>) -> HashMap<String, log::ProcessLog> {
+	let mut log_of_processes: HashMap<String, log::ProcessLog> = HashMap::new();
 	//Iterate through all the processes in the YAML
 	for (_name, process) in processes {
 		let path = process.path;
@@ -120,7 +129,13 @@ fn execute_process(processes: HashMap<String, Process>) {
 					.expect("failed to execute")
 		};
 
+		let log_process_name = format!("{}", _name);
+
+		
+		log_of_processes.insert(log_process_name, log::create_process_entry(SystemTime::now(), "bri".to_string(), "process".to_string(), "command".to_string(), 12));
 	}
+
+	return log_of_processes;
 }
 
 fn create_file(files_to_create: HashMap<String, FileInfo>) {
