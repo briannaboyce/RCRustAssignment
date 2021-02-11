@@ -67,16 +67,20 @@ pub fn build_and_output_log(yaml_log: YamlLog)  {
 	let content = serde_yaml::to_string(&yaml_log).expect("to string failed");
 
 	let timestamp: SystemTime = SystemTime::now();
-	let d = UNIX_EPOCH + Duration::from_secs(timestamp.secs_since_epoch);
-    let datetime = DateTime::<Utc>::from(d);
+    let datetime: DateTime::<Utc> = timestamp.into();
     let timestamp_str = datetime.format("%Y-%m-%d %H:%M:%S.%f").to_string();
 
-    let log_name = format!("/home/bri/Desktop/log-{}.yaml", timestamp_str);
+
+    let log_name = if cfg!(target_os = "windows") {
+    	format!("%userprofile%\Desktop\log-{}.yaml", timestamp_str);
+    } else {
+    	format!("$HOME/Desktop/log-{}.yaml", timestamp_str);
+    }
 
 	let mut new_file = OpenOptions::new()
 							.create(true)
 							.append(true)
-							.open("/home/bri/Desktop/log.yaml")
+							.open(log_name)
 							.expect("creation failed");
 
 	new_file.write_all(content.as_bytes()).expect("write failed");
