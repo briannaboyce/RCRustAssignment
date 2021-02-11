@@ -54,10 +54,34 @@ fn main() {
 
 	let yaml_data: InputFile = serde_yaml::from_str::<InputFile>(&contents).unwrap();
 
-	//setup and run any processes as defined in YAML
-	//TODO make this its own function
+	//Setup and run any processes as defined in YAML
 	let processes = yaml_data.process;
+	execute_process(processes);
 
+	//Create any new files as described by the YAML file
+	let files_to_create = yaml_data.create;
+	create_file(files_to_create);
+	
+
+	//Update file
+	let files_to_update = yaml_data.update;
+	update_file(files_to_update);
+	
+
+	//Delete file
+	let files_to_delete = yaml_data.delete;
+	delete_file(files_to_delete);
+	
+
+	let network_operations = yaml_data.network;
+	transmit_data(network_operations);
+	
+
+	println!("All done");
+
+}
+
+fn execute_process(processes: HashMap<String, Process>) {
 	//Iterate through all the processes in the YAML
 	for (_name, process) in processes {
 		let path = process.path;
@@ -97,12 +121,10 @@ fn main() {
 		};
 
 	}
+}
 
-	//Create any new files as described by the YAML file
-	let files_to_create = yaml_data.create;
-
+fn create_file(files_to_create: HashMap<String, FileInfo>) {
 	//Iterate through any files that need creation
-	//TODO also make this its own function
 	for (_name, file) in files_to_create {
 
 		//Get file data
@@ -128,12 +150,10 @@ fn main() {
 							.expect("creation failed");
 		new_file.write_all(content.as_bytes()).expect("write failed");
 	}
+}
 
-	//Update file
-	let files_to_update = yaml_data.update;
-
+fn update_file(files_to_update: HashMap<String, FileInfo>) {
 	//Iterate through any files that need updating
-	//TODO make own function
 	//TODO should check if we want to overwrite or append to file
 	//TODO should check if extension for file should change
 	//TODO should check if old file extension should be kept as well as new file
@@ -161,12 +181,10 @@ fn main() {
 							.expect("update failed");
 		update_file.write_all(content.as_bytes()).expect("write failed");
 	}
+}
 
-	//Delete file
-	let files_to_delete = yaml_data.delete;
-
+fn delete_file(files_to_delete: HashMap<String, FileInfo>) {
 	//Iterate through any files that need deleting
-	//TODO make own function
 	for(_name, file) in files_to_delete {
 		let path = file.path;
 		let file_type = file.file_type;
@@ -184,9 +202,9 @@ fn main() {
 
 		fs::remove_file(name_for_file).expect("deletion failed");
 	}
+}
 
-	let network_operations = yaml_data.network;
-
+fn transmit_data(network_operations: HashMap<String, NetworkConnection>) {
 	//Iterate through any network connections and transmission
 	for(_name, network_op) in network_operations {
 		let protocol = network_op.protocol;
@@ -241,7 +259,4 @@ fn main() {
 			_ => {},
 		} 
 	}
-
-	println!("All done");
-
 }
