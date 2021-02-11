@@ -133,15 +133,7 @@ fn create_file(files_to_create: HashMap<String, FileInfo>) {
 		let name = file.name;
 		let content = file.content;
 
-		//Check if path was provided
-		//If so, use that
-		//If not, use current directory
-		let mut name_for_file =  format!("{}.{}", name, file_type);
-
-		if let Some(specific_path) = &path {
-			name_for_file = format!("{}{}.{}", *specific_path, name, file_type);
-		}
-
+		let name_for_file = get_file_path(name, file_type, path);
 
 		let mut new_file = OpenOptions::new()
 							.create(true)
@@ -165,15 +157,7 @@ fn update_file(files_to_update: HashMap<String, FileInfo>) {
 		let name = file.name;
 		let content = file.content;
 
-		//TODO this is going to be used multiple times...should be its own function
-		//Check if path was provided
-		//If so, use that
-		//If not, use current directory
-		let mut name_for_file =  format!("{}.{}", name, file_type);
-
-		if let Some(specific_path) = &path {
-			name_for_file = format!("{}{}.{}", *specific_path, name, file_type);
-		}
+		let name_for_file = get_file_path(name, file_type, path);
 
 		let mut update_file = OpenOptions::new()
 							.append(true)
@@ -190,18 +174,23 @@ fn delete_file(files_to_delete: HashMap<String, FileInfo>) {
 		let file_type = file.file_type;
 		let name = file.name;
 
-		//TODO this is going to be used multiple times...should be its own function
+		let name_for_file = get_file_path(name, file_type, path);
+
+		fs::remove_file(name_for_file).expect("deletion failed");
+	}
+}
+
+fn get_file_path(name: String, file_type: String, path: Option<String>) -> String {
+
 		//Check if path was provided
 		//If so, use that
 		//If not, use current directory
-		let mut name_for_file =  format!("{}.{}", name, file_type);
+	let mut name_for_file =  format!("{}.{}", name, file_type);
 
 		if let Some(specific_path) = &path {
 			name_for_file = format!("{}{}.{}", *specific_path, name, file_type);
 		}
-
-		fs::remove_file(name_for_file).expect("deletion failed");
-	}
+		return name_for_file;
 }
 
 fn transmit_data(network_operations: HashMap<String, NetworkConnection>) {
