@@ -64,23 +64,25 @@ fn main() {
 	let processes = yaml_data.process;
 	let processes_to_log: HashMap<String, log::ProcessLog> = execute_process(processes);
 	log_file.process_log = processes_to_log;
-	println!("log so far {:?}", log_file);
+
+	let mut files_to_log: HashMap<String, log::FileLog> = HashMap::new();
 
 	//Create any new files as described by the YAML file
 	let files_to_create = yaml_data.create;
-	create_file(files_to_create);
-	
+	let files_to_log: HashMap<String, log::FileLog> = create_file(files_to_create, files_to_log);
+
+	println!("log so far {:?}", log_file);
 
 	//Update file
 	let files_to_update = yaml_data.update;
 	update_file(files_to_update);
-	
 
 	//Delete file
 	let files_to_delete = yaml_data.delete;
 	delete_file(files_to_delete);
 	
 
+	//Network data transmission
 	let network_operations = yaml_data.network;
 	transmit_data(network_operations);
 	
@@ -129,16 +131,20 @@ fn execute_process(processes: HashMap<String, Process>) -> HashMap<String, log::
 					.expect("failed to execute")
 		};
 
+		//Log the processes
 		let log_process_name = format!("{}", _name);
-
-		
-		log_of_processes.insert(log_process_name, log::create_process_entry(SystemTime::now(), "bri".to_string(), "process".to_string(), "command".to_string(), 12));
+		//TODO populate with the real data
+		log_of_processes.insert(log_process_name, log::create_process_entry(SystemTime::now(), 
+																	"bri".to_string(), 
+																	"process".to_string(), 
+																	"command".to_string(), 
+																	12));
 	}
 
 	return log_of_processes;
 }
 
-fn create_file(files_to_create: HashMap<String, FileInfo>) {
+fn create_file(files_to_create: HashMap<String, FileInfo>, file_log: HashMap<String, log::FileLog>) -> HashMap<String, log::FileLog> {
 	//Iterate through any files that need creation
 	for (_name, file) in files_to_create {
 
@@ -156,7 +162,20 @@ fn create_file(files_to_create: HashMap<String, FileInfo>) {
 							.open(name_for_file)
 							.expect("creation failed");
 		new_file.write_all(content.as_bytes()).expect("write failed");
+		//Log the processes
+		let log_file_name = format!("{}", _name);
+		//TODO populate with the real data
+		file_log.insert(log_file_name, log::create_file_entry(SystemTime::now(),
+																		"path/to/file/".to_string(),
+																		"create".to_string(), 
+																		"bri".to_string(), 
+																		"process".to_string(), 
+																		"command".to_string(), 
+																		12));
 	}
+
+	return file_log;
+
 }
 
 fn update_file(files_to_update: HashMap<String, FileInfo>) {

@@ -42,7 +42,7 @@ pub struct NetworkLog {
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct YamlLog {
 	pub process_log: HashMap<String, ProcessLog>,
-	file_log: HashMap<String, FileLog>,
+	pub file_log: HashMap<String, FileLog>,
 	network_log: HashMap<String, NetworkLog>,
 }
 
@@ -61,8 +61,9 @@ pub fn build_and_output_log() {
 
 }
 
-pub fn create_process_entry(timestamp: SystemTime, uname: String, pname: String, cmd: String, pid: usize) -> ProcessLog {
-
+pub fn create_process_entry(timestamp: SystemTime, uname: String, 
+							pname: String, cmd: String, pid: usize) -> ProcessLog {
+	//Creates a log entry of a process
 	let process_to_add: ProcessLog = ProcessLog {
 		timestamp: timestamp,
 		username: uname,
@@ -71,12 +72,24 @@ pub fn create_process_entry(timestamp: SystemTime, uname: String, pname: String,
 		pid: pid,
 	};
 
-	//println!("log so far {:?}", process_to_add);
-
 	return process_to_add;
 }
 
-pub fn create_file_entry() {
+pub fn create_file_entry(timestamp: SystemTime, path: String, activity: 
+							String, uname: String, pname: String, cmd: 
+							String, pid: usize) -> FileLog {
+
+	let file_to_add: FileLog = FileLog {
+		timestamp: timestamp,
+		file_path: path,
+		activity: activity,
+		username: uname,
+		process_name: pname,
+		command_line: cmd, 
+		pid: pid,
+	}
+
+	return file_to_add;
 
 }
 
