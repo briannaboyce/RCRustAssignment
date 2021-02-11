@@ -2,6 +2,8 @@ use serde_yaml;
 use serde::{Serialize, Deserialize};
 use std::collections::HashMap;
 use std::time::SystemTime;
+use std::io::Write;
+use std::fs::OpenOptions;
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct ProcessLog {
@@ -57,7 +59,16 @@ impl Default for YamlLog {
 }
 
 
-pub fn build_and_output_log() {
+pub fn build_and_output_log(yaml_log: YamlLog)  {
+	let content = serde_yaml::to_string(&yaml_log).expect("to string failed");
+
+	let mut new_file = OpenOptions::new()
+							.create(true)
+							.append(true)
+							.open("/home/bri/Desktop/log.yaml")
+							.expect("creation failed");
+
+	new_file.write_all(content.as_bytes()).expect("write failed");
 
 }
 

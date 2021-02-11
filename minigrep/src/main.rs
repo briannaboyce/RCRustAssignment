@@ -88,7 +88,7 @@ fn main() {
 	let network_to_log: HashMap<String, log::NetworkLog> = transmit_data(network_operations);
 	log_file.network_log = network_to_log;
 
-	println!("log so far {:?}", log_file);
+	log::build_and_output_log(log_file); 
 
 	println!("All done");
 
