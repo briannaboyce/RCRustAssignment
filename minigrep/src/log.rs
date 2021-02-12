@@ -15,28 +15,28 @@ use std::path::Path;
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct ProcessLog {
-	timestamp: SystemTime,
+	timestamp: String,
 	username: String,
 	process_name: String,
 	command_line: String,
-	pid: usize,
+	pid: u32,
 
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct FileLog {
-	timestamp: SystemTime,
+	timestamp: String,
 	file_path: String,
 	activity: String,
 	username: String,
 	process_name: String,
 	command_line: String,
-	pid: usize,
+	pid: u32,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct NetworkLog {
-	timestamp: SystemTime,
+	timestamp: String,
 	username: String,
 	dest_addr: String,
 	dest_port: String,
@@ -46,7 +46,7 @@ pub struct NetworkLog {
 	protocol: String,
 	process_name: String,
 	command_line: String,
-	pid: usize,
+	pid: u32,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
@@ -76,16 +76,15 @@ pub fn build_and_output_log(yaml_log: YamlLog)  {
 
     let mut log_name = String::new();
     let path = env::current_dir().expect("could not get it");
-   let mut total_path = Path::new("");
+    let mut total_path = Path::new("");
 
     if cfg!(target_os = "windows") {
     	log_name = format!("{}\\log-{}.yaml", path.display(), timestamp_str);
     	total_path = Path::new(&log_name);
     } else {
     	log_name = format!("{}/log-{}.yaml", path.display(), timestamp_str);
+    	total_path = Path::new(&log_name);
     }
-
-    println!("{}", total_path.display());
 
 	let mut new_file = OpenOptions::new()
 							.create(true)
@@ -97,8 +96,8 @@ pub fn build_and_output_log(yaml_log: YamlLog)  {
 
 }
 
-pub fn create_process_entry(timestamp: SystemTime, uname: String, 
-							pname: String, cmd: String, pid: usize) -> ProcessLog {
+pub fn create_process_entry(timestamp: String, uname: String, 
+							pname: String, cmd: String, pid: u32) -> ProcessLog {
 	//Creates a log entry of a process
 	let process_to_add: ProcessLog = ProcessLog {
 		timestamp: timestamp,
@@ -111,10 +110,10 @@ pub fn create_process_entry(timestamp: SystemTime, uname: String,
 	return process_to_add;
 }
 
-pub fn create_file_entry(timestamp: SystemTime, path: String, 
+pub fn create_file_entry(timestamp: String, path: String, 
 						 activity: String, uname: String, 
 						 pname: String, cmd: String, 
-						 pid: usize) -> FileLog {
+						 pid: u32) -> FileLog {
 
 	let file_to_add: FileLog = FileLog {
 		timestamp: timestamp,
@@ -130,12 +129,12 @@ pub fn create_file_entry(timestamp: SystemTime, path: String,
 
 }
 
-pub fn create_network_entry(timestamp: SystemTime, uname: String,
+pub fn create_network_entry(timestamp: String, uname: String,
 							daddr: String, dport: String,
 							saddr: String, sport: String,
 							size: usize, protocol: String,
 							pname: String, cmd: String,
-							pid: usize) -> NetworkLog {
+							pid: u32) -> NetworkLog {
 
 	let network_to_add: NetworkLog = NetworkLog {
 		timestamp: timestamp,

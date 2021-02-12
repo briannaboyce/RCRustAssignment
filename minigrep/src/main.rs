@@ -1,6 +1,7 @@
 use std::env;
 use std::fs;
 use std::process::Command;
+use std::process;
 use serde_yaml;
 use serde::{Serialize, Deserialize};
 use std::collections::HashMap;
@@ -10,7 +11,10 @@ use std::net::TcpStream;
 use std::path::Path;
 use std::io::Read;
 use std::net::UdpSocket;
-use std::time::{SystemTime, UNIX_EPOCH};
+use chrono::prelude::DateTime;
+use chrono::Utc;
+use std::time::{SystemTime, UNIX_EPOCH, Duration};
+//use users::get_current_username;
 
 mod log;
 
@@ -136,12 +140,38 @@ fn execute_process(processes: HashMap<String, Process>) -> HashMap<String, log::
 
 		//Log the processes
 		let log_process_name = format!("{}", _name);
-		//TODO populate with the real data
-		log_of_processes.insert(log_process_name, log::create_process_entry(SystemTime::now(), 
-																	"bri".to_string(), 
-																	"process".to_string(), 
-																	"command".to_string(), 
-																	12));
+
+		let whoami = if cfg!(target_os = "windows") {
+
+			Command::new("cmd")
+					.args(&["/C", "whoami"])
+					.output()
+					.expect("failed to execute")
+		} else {
+			Command::new("sh")
+					.arg("-c")
+					.arg("whoami")
+					.output()
+					.expect("failed to execute")
+		};
+
+		let output = std::string::String::from_utf8(whoami.stdout)
+										.ok()
+										.expect("failure");
+
+		let timestamp: SystemTime = SystemTime::now();
+        let datetime: DateTime::<Utc> = timestamp.into();
+        let timestamp_str = datetime.format("%Y-%m-%d-%H.%M.%S.%f").to_string();
+
+     //   let uname = get_current_username().expect("failure");
+        let pname = std::env::current_exe().expect("cannot get");
+        let pid = process::id();
+
+		log_of_processes.insert(log_process_name, log::create_process_entry(timestamp_str,
+																	output, 
+																	pname.into_os_string().into_string().unwrap(), 
+																	command, 
+																	pid));
 	}
 
 	return log_of_processes;
@@ -163,19 +193,44 @@ fn create_file(files_to_create: HashMap<String, FileInfo>, file_log: HashMap<Str
 		let mut new_file = OpenOptions::new()
 							.create(true)
 							.append(true)
-							.open(name_for_file)
+							.open(&name_for_file)
 							.expect("creation failed");
 		new_file.write_all(content.as_bytes()).expect("write failed");
 		//Log the processes
 		let log_file_name = format!("{}", _name);
-		//TODO populate with the real data
-		file_log.insert(log_file_name, log::create_file_entry(SystemTime::now(),
-																		"path/to/file/".to_string(),
+
+		let whoami =  if cfg!(target_os = "windows") {
+
+			Command::new("cmd")
+					.args(&["/C", "whoami"])
+					.output()
+					.expect("failed to execute")
+		} else {
+			Command::new("sh")
+					.arg("-c")
+					.arg("whoami")
+					.output()
+					.expect("failed to execute")
+		};
+
+		let output = std::string::String::from_utf8(whoami.stdout)
+										.ok()
+										.expect("failure");
+
+		let timestamp: SystemTime = SystemTime::now();
+        let datetime: DateTime::<Utc> = timestamp.into();
+        let timestamp_str = datetime.format("%Y-%m-%d-%H.%M.%S.%f").to_string();
+
+     //   let uname = get_current_username().expect("failure");
+        let pname = std::env::current_exe().expect("cannot get");
+        let pid = process::id();
+		file_log.insert(log_file_name, log::create_file_entry(timestamp_str,
+																		name_for_file,
 																		"create".to_string(), 
-																		"bri".to_string(), 
-																		"process".to_string(), 
-																		"command".to_string(), 
-																		12));
+																		output, 
+																		pname.into_os_string().into_string().unwrap(), 
+																		"".to_string(), 
+																		pid));
 	}
 
 	return file_log;
@@ -200,20 +255,45 @@ fn update_file(files_to_update: HashMap<String, FileInfo>, file_log: HashMap<Str
 
 		let mut update_file = OpenOptions::new()
 							.append(true)
-							.open(name_for_file)
+							.open(&name_for_file)
 							.expect("update failed");
 		update_file.write_all(content.as_bytes()).expect("write failed");
 
 		//Log the processes
 		let log_file_name = format!("{}-update", _name);
-		//TODO populate with the real data
-		file_log.insert(log_file_name, log::create_file_entry(SystemTime::now(),
-																		"path/to/file/".to_string(),
+
+		let whoami = if cfg!(target_os = "windows") {
+
+			Command::new("cmd")
+					.args(&["/C", "whoami"])
+					.output()
+					.expect("failed to execute")
+		} else {
+			Command::new("sh")
+					.arg("-c")
+					.arg("whoami")
+					.output()
+					.expect("failed to execute")
+		};
+
+		let output = std::string::String::from_utf8(whoami.stdout)
+										.ok()
+										.expect("failure");
+
+		let timestamp: SystemTime = SystemTime::now();
+        let datetime: DateTime::<Utc> = timestamp.into();
+        let timestamp_str = datetime.format("%Y-%m-%d-%H.%M.%S.%f").to_string();
+
+     //   let uname = get_current_username().expect("failure");
+        let pname = std::env::current_exe().expect("cannot get");
+        let pid = process::id();
+		file_log.insert(log_file_name, log::create_file_entry(timestamp_str,
+																		name_for_file,
 																		"update".to_string(), 
-																		"bri".to_string(), 
-																		"process".to_string(), 
-																		"command".to_string(), 
-																		12));
+																		output, 
+																		pname.into_os_string().into_string().unwrap(), 
+																		"".to_string(), 
+																		pid));
 	}
 	return file_log;
 }
@@ -228,18 +308,43 @@ fn delete_file(files_to_delete: HashMap<String, FileInfo>, file_log: HashMap<Str
 
 		let name_for_file = get_file_path(name, file_type, path);
 
-		fs::remove_file(name_for_file).expect("deletion failed");
+		fs::remove_file(&name_for_file).expect("deletion failed");
 
 		//Log the processes
 		let log_file_name = format!("{}-delete", _name);
-		//TODO populate with the real data
-		file_log.insert(log_file_name, log::create_file_entry(SystemTime::now(),
-																		"path/to/file/".to_string(),
+
+		let whoami = if cfg!(target_os = "windows") {
+
+			Command::new("cmd")
+					.args(&["/C", "whoami"])
+					.output()
+					.expect("failed to execute")
+		} else {
+			Command::new("sh")
+					.arg("-c")
+					.arg("whoami")
+					.output()
+					.expect("failed to execute")
+		};
+
+		let output = std::string::String::from_utf8(whoami.stdout)
+										.ok()
+										.expect("failure");
+
+		let timestamp: SystemTime = SystemTime::now();
+        let datetime: DateTime::<Utc> = timestamp.into();
+        let timestamp_str = datetime.format("%Y-%m-%d-%H.%M.%S.%f").to_string();
+
+     //   let uname = get_current_username().expect("failure");
+        let pname = std::env::current_exe().expect("cannot get");
+        let pid = process::id();
+		file_log.insert(log_file_name, log::create_file_entry(timestamp_str,
+																		name_for_file,
 																		"delete".to_string(), 
-																		"bri".to_string(), 
-																		"process".to_string(), 
-																		"command".to_string(), 
-																		12));
+																		output, 
+																		pname.into_os_string().into_string().unwrap(), 
+																		"".to_string(), 
+																		pid));
 	}
 	return file_log;
 }
@@ -265,6 +370,7 @@ fn transmit_data(network_operations: HashMap<String, NetworkConnection>) -> Hash
 		let dest_addr = network_op.dest_addr;
 		let dest_port = network_op.dest_port;
 		let data = network_op.data;
+		let mut read_amt = 0;
 
 		match protocol.trim() {
 			"tcp" => {
@@ -280,11 +386,9 @@ fn transmit_data(network_operations: HashMap<String, NetworkConnection>) -> Hash
 
 			    let mut file = std::fs::File::open(path).expect("failure");
 			    let file_size = file.metadata().unwrap().len();
-			    println!("File size: {}", file_size);
 
 			    let mut buffer = vec![0; file_size as usize];
-			    let read_amt = file.read(&mut buffer).expect("read fail");
-			    println!("Bytes read from file: {}", read_amt);
+			    read_amt = file.read(&mut buffer).expect("read fail");
 
 				stream.write(&buffer).expect("write failed");
 			},
@@ -297,15 +401,12 @@ fn transmit_data(network_operations: HashMap<String, NetworkConnection>) -> Hash
 
 				let path = Path::new(&data);
 			    let file_name = path.file_name().unwrap();
-			    println!("File name: {:?}", file_name);
 
 			    let mut file = std::fs::File::open(path).expect("failure");
 			    let file_size = file.metadata().unwrap().len();
-			    println!("File size: {}", file_size);
 
 			    let mut buffer = vec![0; file_size as usize];
-			    let read_amt = file.read(&mut buffer).expect("read fail");
-			    println!("Bytes read from file: {}", read_amt);
+			    read_amt = file.read(&mut buffer).expect("read fail");
 
 			    socket.connect(destination).expect("connect failed");
 				socket.send(&buffer).expect("send failed");
@@ -315,18 +416,42 @@ fn transmit_data(network_operations: HashMap<String, NetworkConnection>) -> Hash
 
 		//Log the processes
 		let log_network_name = format!("{}", _name);
-		//TODO populate with the real data
-		log_of_networks.insert(log_network_name, log::create_network_entry(SystemTime::now(), 
-																	"bri".to_string(), 
+		let whoami = if cfg!(target_os = "windows") {
+
+			Command::new("cmd")
+					.args(&["/C", "whoami"])
+					.output()
+					.expect("failed to execute")
+		} else {
+			Command::new("sh")
+					.arg("-c")
+					.arg("whoami")
+					.output()
+					.expect("failed to execute")
+		};
+
+		let output = std::string::String::from_utf8(whoami.stdout)
+										.ok()
+										.expect("failure");
+
+		let timestamp: SystemTime = SystemTime::now();
+        let datetime: DateTime::<Utc> = timestamp.into();
+        let timestamp_str = datetime.format("%Y-%m-%d-%H.%M.%S.%f").to_string();
+
+     //   let uname = get_current_username().expect("failure");
+        let pname = std::env::current_exe().expect("cannot get");
+        let pid = process::id();
+		log_of_networks.insert(log_network_name, log::create_network_entry(timestamp_str, 
+																	output, 
 																	dest_addr,
 																	dest_port,
-																	"127.0.0.1".to_string(),
-																	"0000".to_string(),
-																	31,
+																	"0".to_string(),
+																	"0".to_string(),
+																	read_amt,
 																	protocol,
-																	"process".to_string(), 
-																	"command".to_string(), 
-																	12));
+																	pname.into_os_string().into_string().unwrap(), 
+																	"".to_string(), 
+																	pid));
 	}
 
 	return log_of_networks;
