@@ -2,14 +2,57 @@
 
 A simple program built in Rust.
 
-This program will
+This program takes input from a YAML file and performs the following operations based on YAML input:
 
-*	Start a process
-*	Create a file
-*	Edit a file
-*	Delete a file 
-*	Transmit data over the network
+*	Starts an executable process
+*	Creates a file
+*	Edits a file
+*	Deletes a file 
+*	Transmit data over the network using either TCP or UDP
 
-Program will run on Linux, macOS, and Windows
+A sample YAML file structure is included at `minigrep/src/test.yaml`
 
-A log file will be generated of all actions taken by this program as it runs
+The YAML file is divided into 5 objects:
+	- process
+	- create
+	- update
+	- delete
+	- network
+
+Process object:
+	-objectName
+		-path: String
+		-executableName: String
+		-arguments: String (optional)
+
+Create object:
+	-objectName
+		-path: String
+		-fileType: String
+		-fileName: String
+		-fileContent: String
+
+Update object:
+	-objectName
+		-path: String
+		-fileType: String
+		-fileName: String
+		-fileContent: String
+
+Delete object:
+	-objectName
+		-path: String
+		-fileType: String
+		-fileName: String
+		-fileContent: String (empty)
+
+Network object:
+	-objectName
+		-destAddr: String
+		-destPort: String
+		-protocol: String (TCP or UDP)
+		-data: String
+
+A log file is output in the current directory of operations taken. The file is output in YAML. 
+
+Program runs on Linux, macOS, and Windows.
