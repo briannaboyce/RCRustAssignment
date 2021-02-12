@@ -13,8 +13,7 @@ use std::io::Read;
 use std::net::UdpSocket;
 use chrono::prelude::DateTime;
 use chrono::Utc;
-use std::time::{SystemTime, UNIX_EPOCH, Duration};
-//use users::get_current_username;
+use std::time::SystemTime;
 
 mod log;
 
@@ -376,21 +375,25 @@ fn transmit_data(network_operations: HashMap<String, NetworkConnection>) -> Hash
 			"tcp" => {
 				let destination = format!("{}:{}", dest_addr, dest_port);
 				println!("{}", destination);
-				let mut stream = TcpStream::connect(destination).expect("Connection failed");
 
-				//TODO need to check if there is a path to a file or just regular data
-				//handle errors more gracefully
-				let path = Path::new(&data);
-			    let file_name = path.file_name().unwrap();
-			    println!("File name: {:?}", file_name);
+				if let Ok(mut stream) = TcpStream::connect(destination) {
+					//TODO need to check if there is a path to a file or just regular data
+					//handle errors more gracefully
+					let path = Path::new(&data);
+				    //let file_name = path.file_name().unwrap();
 
-			    let mut file = std::fs::File::open(path).expect("failure");
-			    let file_size = file.metadata().unwrap().len();
+				    let mut file = std::fs::File::open(path).expect("failure");
+				    let file_size = file.metadata().unwrap().len();
 
-			    let mut buffer = vec![0; file_size as usize];
-			    read_amt = file.read(&mut buffer).expect("read fail");
+				    let mut buffer = vec![0; file_size as usize];
+				    read_amt = file.read(&mut buffer).expect("read fail");
 
-				stream.write(&buffer).expect("write failed");
+					stream.write(&buffer).expect("write failed");
+				} else {
+					continue;
+				}
+
+				
 			},
 			"udp" => {
 				let destination = format!("{}:{}", dest_addr, dest_port);
@@ -400,7 +403,7 @@ fn transmit_data(network_operations: HashMap<String, NetworkConnection>) -> Hash
 				let socket = UdpSocket::bind("0.0.0.0:0").expect("bind failed");
 
 				let path = Path::new(&data);
-			    let file_name = path.file_name().unwrap();
+			    //let file_name = path.file_name().unwrap();
 
 			    let mut file = std::fs::File::open(path).expect("failure");
 			    let file_size = file.metadata().unwrap().len();

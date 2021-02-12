@@ -7,10 +7,8 @@ use std::io::Write;
 use std::fs::OpenOptions;
 use chrono::prelude::DateTime;
 use chrono::Utc;
-use std::time::{SystemTime, UNIX_EPOCH, Duration};
+use std::time::SystemTime;
 use std::env;
-use std::fs;
-use std::path::PathBuf;
 use std::path::Path;
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]

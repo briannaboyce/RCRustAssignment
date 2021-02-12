@@ -1,27 +1,28 @@
 #Start a process
 process:
   process1:  
-   path: /home/bri/RCRustAssignment/scripts/
-   name: testBash.sh
+   path: C:\Users\Brianna\Documents\gitRepos\RCRustAssignment\scripts\
+   name: test.bat
    arguments:
 
 #Create a file
 
 create:
   file1: 
-   path: /home/bri/Desktop/
+   path: C:\Users\Brianna\Desktop\
    file_type: txt
    name: dummy
    content: Dummy text for a new test file
 
   file2: 
    path: 
-   file_type: yaml
+   file_type: txt
    name: dummy2
    content: 
 
+    
   networkFile: 
-    path: /home/bri/
+    path: C:\Users\Brianna\
     file_type: txt
     name: hello
     content: Hello World!
@@ -30,7 +31,7 @@ create:
 
 update: 
   file1: 
-   path: /home/bri/Desktop/
+   path: C:\Users\Brianna\Desktop\
    file_type: txt
    name: dummy
    content: Better text
@@ -40,22 +41,24 @@ update:
 delete: 
   file1: 
    path: 
-   file_type: yaml
+   file_type: txt
    name: dummy2
    content: 
+
 
 network:
   testTcp: 
     dest_addr: !!str 172.16.0.8
     dest_port: !!str 4444
     protocol: tcp
-    data: /home/bri/hello.txt
+    data: C:\Users\Brianna\hello.txt
 
   testUdp: 
     dest_addr: !!str 172.16.0.8
     dest_port: !!str 4444
     protocol: udp
-    data: /home/bri/hello.txt
+    data: C:\Users\Brianna\hello.txt
+
 
 
 
