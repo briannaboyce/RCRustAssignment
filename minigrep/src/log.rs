@@ -8,6 +8,10 @@ use std::fs::OpenOptions;
 use chrono::prelude::DateTime;
 use chrono::Utc;
 use std::time::{SystemTime, UNIX_EPOCH, Duration};
+use std::env;
+use std::fs;
+use std::path::PathBuf;
+use std::path::Path;
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct ProcessLog {
@@ -68,20 +72,25 @@ pub fn build_and_output_log(yaml_log: YamlLog)  {
 
 	let timestamp: SystemTime = SystemTime::now();
     let datetime: DateTime::<Utc> = timestamp.into();
-    let timestamp_str = datetime.format("%Y-%m-%d %H:%M:%S.%f").to_string();
+    let timestamp_str = datetime.format("%Y-%m-%d-%H.%M.%S.%f").to_string();
 
     let mut log_name = String::new();
+    let path = env::current_dir().expect("could not get it");
+   let mut total_path = Path::new("");
 
     if cfg!(target_os = "windows") {
-    	log_name = format!("%userprofile%\Desktop\log-{}.yaml", timestamp_str);
+    	log_name = format!("{}\\log-{}.yaml", path.display(), timestamp_str);
+    	total_path = Path::new(&log_name);
     } else {
-    	log_name = format!("$HOME/Desktop/log-{}.yaml", timestamp_str);
+    	log_name = format!("{}/log-{}.yaml", path.display(), timestamp_str);
     }
 
+    println!("{}", total_path.display());
+
 	let mut new_file = OpenOptions::new()
-							.create(true)g
+							.create(true)
 							.append(true)
-							.open(log_name)
+							.open(total_path)
 							.expect("creation failed");
 
 	new_file.write_all(content.as_bytes()).expect("write failed");
