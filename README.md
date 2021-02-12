@@ -10,6 +10,8 @@ This program takes input from a YAML file and performs the following operations 
 *	Deletes a file 
 *	Transmit data over the network using either TCP or UDP
 
+The program can be run from the `minigrep/src/` directory using `cargo run <input.yaml>`
+
 A sample YAML file structure is included at `minigrep/src/test.yaml`
 
 - The YAML file is divided into 5 objects:
